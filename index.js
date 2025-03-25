@@ -18,13 +18,31 @@ app.get("/", function (req, res) {
   res.sendFile(__dirname + '/views/index.html');
 });
 
-
 // your first API endpoint... 
 app.get("/api/hello", function (req, res) {
   res.json({greeting: 'hello API'});
 });
 
-
+app.get("/api/:date?", function(req, res) {
+  let date = req.params.date;
+  // . 如果传入的参数是空日期，将返回一个包含当前时间的 unix 键的 JSON 对象。
+  if (!date) {
+    res.json({unix: new Date().getTime(), utc: new Date().toUTCString()});
+  } else {
+    // . 如果传入的参数是一个合法的日期字符串，应该返回一个包含该日期的 unix 键的 JSON 对象。
+    // 参数也可能是一个unix时间戳，应该能够解析它并返回一个包含该日期的 unix 键的 JSON 对象。
+    let dateInt = parseInt(date);
+    let dateObj = new Date(dateInt);
+    if (dateObj.toString() === 'Invalid Date') {
+      dateObj = new Date(date);
+    }
+    if (dateObj.toString() === 'Invalid Date') {
+      res.json({error: 'Invalid Date'});
+    } else {
+      res.json({unix: dateObj.getTime(), utc: dateObj.toUTCString()});
+    }
+  }
+});
 
 // Listen on port set in environment variable or default to 3000
 var listener = app.listen(process.env.PORT || 3000, function () {
