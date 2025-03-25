@@ -23,25 +23,39 @@ app.get("/api/hello", function (req, res) {
   res.json({greeting: 'hello API'});
 });
 
-app.get("/api/:date?", function(req, res) {
-  let date = req.params.date;
-  // . 如果传入的参数是空日期，将返回一个包含当前时间的 unix 键的 JSON 对象。
-  if (!date) {
-    res.json({unix: new Date().getTime(), utc: new Date().toUTCString()});
-  } else {
-    // . 如果传入的参数是一个合法的日期字符串，应该返回一个包含该日期的 unix 键的 JSON 对象。
-    // 参数也可能是一个unix时间戳，应该能够解析它并返回一个包含该日期的 unix 键的 JSON 对象。
-    let dateInt = parseInt(date);
-    let dateObj = new Date(dateInt);
-    if (dateObj.toString() === 'Invalid Date') {
-      dateObj = new Date(date);
-    }
-    if (dateObj.toString() === 'Invalid Date') {
-      res.json({error: 'Invalid Date'});
-    } else {
-      res.json({unix: dateObj.getTime(), utc: dateObj.toUTCString()});
-    }
+app.get("/api/:date?", function (req, res) {
+  const dateParam = req.params.date;
+
+  // 如果没有提供日期参数，返回当前时间
+  if (!dateParam) {
+    const now = new Date();
+    return res.json({  // 使用 return 终止后续代码
+      unix: now.getTime(),
+      utc: now.toUTCString()
+    });
   }
+
+  // 尝试解析日期参数
+  let date;
+  // 检查是否是纯数字（Unix 时间戳）
+  if (/^\d+$/.test(dateParam)) {
+    date = new Date(parseInt(dateParam));
+  } else {
+    date = new Date(dateParam);
+  }
+
+  // 检查日期是否有效
+  if (date.toString() === "Invalid Date") {
+    return res.json({  // 使用 return 终止后续代码
+      error: "Invalid Date"
+    });
+  }
+
+  // 返回有效日期的结果
+  return res.json({
+    unix: date.getTime(),
+    utc: date.toUTCString()
+  });
 });
 
 // Listen on port set in environment variable or default to 3000
